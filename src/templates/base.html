@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="{% static 'scorpion.css' %}">
+    {% block styles %}
+
+    {% endblock %}
+
+    <title>{% block title %}Tweeter{% endblock %}</title>
+</head>
+<body>
+
+<div class="container-fluid bg--primary">
+  <div style="display:flex; justify-content:space-between" class="container py-3">
+    <h3 ><a class="text--light"  href="{% url 'tweet:tweets' %}">Tweet</a></h3>
+    <h3 class="text--light" >
+      <a href="{% url "tweet:tweet_create" %}">
+        <i class="fa fa-plus text--light"></i>
+      </a>
+    </h3>
+  </div>
+</div>
+
+<div class="container">
+    {% block content %}
+
+    {% endblock %}
+</div>
+
+
+{#<script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>#}
+<script src="{% static 'micromodal.js' %}"></script>
+
+{% block scripts %}
+
+{% endblock %}
+
+</body>
+</html>

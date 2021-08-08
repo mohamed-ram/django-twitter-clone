@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'styles/profile.css' %}">
+{% endblock %}
+
+{% block title %}
+  Profile
+{% endblock %}
+
+{% block content %}
+  <div class="profile bg--secondary rounded mt-3" style="display: flex; justify-content: space-around; align-items:center;">
+    <h1 class="">
+      <b>{{ profile.user.username|capfirst }}</b>'s profile
+    </h1>
+    {% if not request.user == profile.user %}
+      <h3 class="text--light" >
+        <a href="{% url "profile:follow" username=profile.user.username %}">
+{#          {% if profile.user in request.user.profile.following.all %}#}
+{#            UnFollow#}
+{#          {% else %}#}
+{#            Follow#}
+{#          {% endif %}#}
+          {% if not following %}
+            Follow
+          {% else %}
+            Unfollow
+          {% endif %}
+        </a>
+      </h3>
+    {% endif %}
+  </div>
+
+  <div class="card">
+  <div class="card__img__container">
+    {% if profile.user_img %}
+      <img class="card__img" src="{{ profile.user_img.url }}" alt="">
+    {% else %}
+{#      <img class="card__img" src="https://i.pinimg.com/originals/51/f6/fb/51f6fb256629fc755b8870c801092942.png" alt="">#}
+      <img class="card__img" src="https://i.stack.imgur.com/l60Hf.png" alt="">
+    {% endif %}
+  </div>
+    <div class="card__body">
+      <span>following: {{ profile.get_following}}</span>
+      <hr>
+      <span>followers: {{ profile.user.followed_by.all }}</span>
+    </div>
+  </div>
+
+  <h2 class="text--center bg--secondary rounded">Tweets</h2>
+{#  {% for tweet in profile.user.tweets.all %}#}
+{#    <p>{{ tweet }}</p>#}
+{#  {% endfor %}#}
+
+
+  {% if not tweets %}
+    {% for tweet in profile.user.tweets.all %}
+      <div class="card">
+        <div class="card__header">
+          <div class="media">
+            <div class="media__img">
+              {% if profile.user_img %}
+                <img src="{{ profile.user_img.url }}" alt="">
+              {% else %}
+                <img src="https://i.pinimg.com/originals/51/f6/fb/51f6fb256629fc755b8870c801092942.png" alt="">
+              {% endif %}
+            </div>
+
+            <div class="media__info">
+              <span class="media--username"><a class="text--info" style="text-decoration:none" href="{% url 'profile:user_profile' user=tweet.author %}">{{ tweet.author }}</a></span>
+              <span class="media--time">{{ tweet.timestamp| timesince}} ago.</span>
+            </div>
+          </div>
+        </div>
+        <div class="card__body">
+          <h5>{{ tweet.content| capfirst }}</h5>
+          <small><a href="{% url "tweet:tweet_detail" tweet_id=tweet.pk %}">see more</a></small>
+          <small><a href="{% url "tweet:tweet_update" pk=tweet.pk %}">edit</a></small>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  
+{% endblock %}

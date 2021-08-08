@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Twitter | tweet: {{ tweet.id }}
+{% endblock %}
+
+{% block content %}
+  <h1>{{ model_name }}</h1>
+  <div class="mt-4">
+    <div class="card">
+      <div class="card__body">
+        <p>
+          {{ tweet.content }}
+        </p>
+        <small>{{ tweet.timestamp|timesince }} ago.</small><br/>
+      </div>
+      <div class="card__footer">
+
+        <small>author: {{ tweet.author }},</small>
+        <small>author id: {{ tweet.author.id }}</small>
+        <small>tweet id: {{ tweet.id }}</small>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}

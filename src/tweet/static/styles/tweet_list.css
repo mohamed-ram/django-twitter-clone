@@ -1,0 +1,21 @@
+.modal{
+  width: 70rem;
+}
+
+form.retweet_form{
+  margin:0;
+}
+
+.retweet-input{
+  border: none;
+  margin: 0;
+  min-height: 5rem;
+  max-height: 5rem;
+  min-width: 100%;
+  max-width: 100%;
+}
+
+textarea.retweet-input:focus{
+  border: none;
+  
+}

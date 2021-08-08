@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+  {{ block.super }} | tweets
+{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'styles/tweet_list.css' %}">
+{% endblock %}
+
+{% block content %}
+  <div class="row mt-3">
+
+  {# user info  #}
+    <div class="col--md-4">
+      <div class="content p-2">
+        <h3 class="bg--secondary p-2 rounded">welcome <b>{{ request.user.username|capfirst }}</b>!</h3>
+        <h5 class="bg--info p-2 rounded">Following: {{ request.user.profile.get_following.count }}</h5>
+        <h5 class="bg--success p-2 rounded">Followers: {{ request.user.profile.user.followed_by.count }}</h5>
+        <form>
+
+          <div class="form-group">
+            <input autocomplete="off" placeholder="Search tweet or user." type="text" value="{{ request.GET.q }}" name="q" value="{{ request.GET.q }}">
+            <input type="submit" class="btn--success"  value="Search">
+          </div>
+        </form>
+      </div>
+    </div>
+  {#  end user info #}
+
+    <div class="col--md-8">
+      <div class="p-2">
+
+        {# Tweet form #}
+        {% if not request.GET.q %}
+          <form action="{% url 'tweet:tweet_create' %}" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Tweet">
+          </form>
+        {% endif %}
+      {# end tweet form #}
+
+      {% if not tweets %}
+        <h2>No tweets matches..</h2>
+      {% elif tweets %}
+
+        {% if request.GET.q  %}
+          <h1>
+            <span class="text--info rounded">{{ tweets.count }}</span>
+            tweet{{ tweets|pluralize }} includes
+            <span class="bg--secondary rounded">{{ request.GET.q }}</span>
+          </h1>
+        {% endif %}
+
+        {# Tweet list#}
+
+        {% for tweet in tweets %}
+
+        {# tweet item #}
+          <div style="margin-bottom: 4rem" class="card shadow--mute-1 mb-5">
+            {# tweet header #}
+            <div class="card__header">
+              <div class="media">
+                <div class="media__img">
+                  {% if tweet.author.profile.user_img %}
+                    <img src="{{ tweet.author.profile.user_img.url }}" alt="">
+                  {% else %}
+                    <img src="https://i.pinimg.com/originals/51/f6/fb/51f6fb256629fc755b8870c801092942.png" alt="">
+                  {% endif %}
+                </div>
+
+                <div class="media__info">
+                  <a class="media__username text--info"  href="{% url 'profile:user_profile' user=tweet.author %}">{{ tweet.author }}</a>
+                  <span class="media__time">{{ tweet.timestamp| timesince}} ago.</span>
+                </div>
+                <div class="media__more">
+                  {% if not request.user == tweet.author %}
+                    <a id="follow" href="{% url "profile:follow" username=tweet.author.username  %}">
+                      {% if tweet.author in request.user.profile.following.all %}
+                        <span class="btn--danger p-1 rounded">UnFollow</span>
+                      {% else %}
+                        <span class="btn--success p-1 rounded">Follow</span>
+                      {% endif %}
+                    </a>
+              {% endif %}
+                </div>
+              </div>
+          </div>
+            {# end tweet header #}
+
+            {# tweet body #}
+            <div class="card__body p-0">
+              <h5>{{ tweet.content| capfirst |safe }}</h5>
+
+              {# retweeted body #}
+              {% if tweet.is_retweeted %}
+                <div class="card card--mute" style="margin: 0">
+                  <div class="card__header">
+                    <div class="media">
+                      <div class="media__img">
+                        {% if tweet.parent.author.profile.user_img %}
+                          <img src="{{ tweet.parent.author.profile.user_img.url }}" alt="">
+                        {% else %}
+                          <img src="https://i.pinimg.com/originals/51/f6/fb/51f6fb256629fc755b8870c801092942.png" alt="">
+                        {% endif %}
+                      </div>
+
+                      <div class="media__info">
+                        <a class="media__username text--info" href="{% url 'profile:user_profile' user=tweet.parent.author %}">{{ tweet.parent.author }}</a>
+                        <span class="media__time">{{ tweet.parent.timestamp| timesince}} ago.</span>
+                      </div>
+                    </div>
+                </div>
+                  <div class="card__body">
+                    <h5>{{ tweet.parent.content| capfirst  }}</h5>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+            {# end tweet body #}
+
+            {# tweet footer #}
+            <div class="card__footer bg--mute">
+
+              <a class="text--dark" href="{% url "tweet:tweet_detail" tweet_id=tweet.pk %}">See More</a>
+              <small> | </small>
+              <a class="text--dark" href="{% url "tweet:tweet_update" pk=tweet.pk %}">Edit</a>
+
+              {% if not tweet.is_retweeted %}
+
+              <small> | </small>
+              <a class="text--dark" modal-open="retweetmodal" >Retweet</a>
+{#                href="{% url "tweet:retweet" pk=tweet.id %}"  #}
+
+              {# Retweet form modal #}
+              <div class="modal micromodal-slide" id="retweetmodal" aria-hidden="true">
+                <div class="modal__overlay" tabindex="-1" modal-close>
+
+                  <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+                    <header class="modal__header bg--info">
+                      <h2 class="modal__title">
+                        Retweet.
+                      </h2>
+                      <button class="modal__close" modal-close></button>
+                    </header>
+
+                    <main class="modal__content p-0 m-0" >
+                      <form class="retweet_form" method="post">
+                        {% csrf_token %}
+                        {{ retweet_form }}
+                      </form>
+                      <hr>
+                      <p class="p-2">{{ tweet  }} -- {{ tweet.author }}</p>
+                    </main>
+
+                    <footer class="modal__footer">
+                      <a class="btn btn--success" href="{% url "tweet:retweet" pk=tweet.id %}" class="btn--success">Retweet</a>
+                      <button class="btn--warning" modal-close>Close</button>
+                    </footer>
+
+                </div>
+                </div>
+              </div>
+              {# end Retweet form modal #}
+
+              {% endif %}
+
+            </div>
+          </div>
+        {% endfor %}
+
+        {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+
+  <script src="{% static 'js/homepage.js' %}"></script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+{#              {% if not request.user == tweet.author %}#}
+{#                <small> | </small>#}
+{#                <small>#}
+{#                  <a id="follow" href="{% url "profile:follow" username=tweet.author.username  %}">#}
+{#                    {% if tweet.author in request.user.profile.following.all %}#}
+{#                      <span class="bg--danger p-1 rounded">UnFollow</span>#}
+{#                    {% else %}#}
+{#                      <span class="bg--success p-1 rounded">Follow</span>#}
+{#                    {% endif %}#}
+{#                  </a>#}
+{#                </small>#}
+{#              {% endif %}#}

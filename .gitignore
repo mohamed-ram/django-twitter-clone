@@ -1,0 +1,14 @@
+# created by virtualenv automatically
+*.cfg
+
+lib/
+scripts/
+media/
+
+__pycache__/
+migrations/
+
+db.sqlite3
+secret_settings.py
+
+
